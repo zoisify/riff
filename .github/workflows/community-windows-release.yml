@@ -1,9 +1,9 @@
-﻿name: Community Windows release
+name: Community Windows release
 
 on:
   push:
     tags:
-      - 'v*-community.*'
+      - 'v*-plus.*'
 
 permissions:
   contents: write
@@ -30,7 +30,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Windows installer build failed' }
           $installer = Get-ChildItem dist -File -Filter '*.exe' | Where-Object { $_.Name -notlike '*__uninstaller*' } | Select-Object -First 1
           if (-not $installer) { throw 'NSIS installer not found' }
-          Move-Item -LiteralPath $installer.FullName -Destination 'dist/Riff-Community-44.0.0-community.1-Windows-x64-Setup.exe'
+          Move-Item -LiteralPath $installer.FullName -Destination 'dist/Riff-Plus-44.0.0-plus.1-Windows-x64-Setup.exe'
       - name: Build portable executable
         shell: pwsh
         run: |
@@ -38,11 +38,11 @@ jobs:
           if ($LASTEXITCODE -ne 0) { throw 'Windows portable build failed' }
           $portable = Get-ChildItem dist -File -Filter '*.exe' | Where-Object { $_.Name -notlike '*-Setup.exe' -and $_.Name -notlike '*__uninstaller*' } | Select-Object -First 1
           if (-not $portable) { throw 'Portable executable not found' }
-          Move-Item -LiteralPath $portable.FullName -Destination 'dist/Riff-Community-44.0.0-community.1-Windows-x64-Portable.exe'
+          Move-Item -LiteralPath $portable.FullName -Destination 'dist/Riff-Plus-44.0.0-plus.1-Windows-x64-Portable.exe'
       - name: SHA-256 checksums
         shell: pwsh
         run: |
-          $assets = Get-ChildItem dist -File | Where-Object { $_.Name -match 'Riff-Community-.+-Windows-x64-(Setup|Portable)\.exe$' }
+          $assets = Get-ChildItem dist -File | Where-Object { $_.Name -match 'Riff-Plus-.+-Windows-x64-(Setup|Portable)\.exe$' }
           if ($assets.Count -ne 2) { throw "Expected two Windows executables, found $($assets.Count)" }
           $lines = @($assets | Sort-Object Name | ForEach-Object { "$((Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLower())  $($_.Name)" })
           [System.IO.File]::WriteAllLines((Join-Path (Resolve-Path dist) 'SHA256SUMS.txt'), $lines, [System.Text.Encoding]::UTF8)
@@ -53,11 +53,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create '${{ github.ref_name }}' `
-            'dist/Riff-Community-44.0.0-community.1-Windows-x64-Setup.exe' `
-            'dist/Riff-Community-44.0.0-community.1-Windows-x64-Portable.exe' `
+            'dist/Riff-Plus-44.0.0-plus.1-Windows-x64-Setup.exe' `
+            'dist/Riff-Plus-44.0.0-plus.1-Windows-x64-Portable.exe' `
             'dist/SHA256SUMS.txt' `
             --repo '${{ github.repository }}' `
-            --title 'Riff Community 44.0.0-community.1 (Windows x64)' `
+            --title 'Riff+ 44.0.0-plus.1 (Windows x64)' `
             --notes-file '.github/COMMUNITY_RELEASE_NOTES.md' `
             --verify-tag
 

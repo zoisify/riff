@@ -1,6 +1,6 @@
 {
   "name": "riff",
-  "version": "44.0.0-community.1",
+  "version": "44.0.0-plus.1",
   "main": "src/main/main.js",
   "bin": {
     "riff": "src/main/cli.js"
@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "rootscripts",
   "license": "MIT",
-  "description": "Unofficial community build of Riff with enhanced YouTube searching and playback.",
+  "description": "Unofficial Riff+ fork with improved YouTube searching and playback.",
   "devDependencies": {
     "electron": "^41.7.1",
     "electron-builder": "^26.15.3"
@@ -28,7 +28,7 @@
     "hls.js": "^1.7.1",
     "tone": "^15.1.22"
   },
-  "productName": "Riff Community",
+  "productName": "Riff+",
   "homepage": "https://github.com/zoisify/riff",
   "repository": {
     "type": "git",
@@ -38,8 +38,8 @@
     "url": "https://github.com/zoisify/riff/issues"
   },
   "build": {
-    "appId": "io.github.zoisify.riffcommunity",
-    "productName": "Riff Community",
+    "appId": "io.github.zoisify.riffplus",
+    "productName": "Riff+",
     "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"

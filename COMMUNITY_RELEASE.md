@@ -1,10 +1,10 @@
-﻿# Riff Community — unofficial Windows build
+﻿# Riff+ — unofficial Windows build
 
 **Based on [Riff](https://github.com/rootscripts/riff) 44.0.0** by rootscripts. The original project is licensed under MIT; see [LICENSE](LICENSE). This fork is **not affiliated with, endorsed by, or maintained by** the upstream author.
 
 ## Download
 
-Open [Releases](https://github.com/zoisify/riff/releases) and select the latest **Riff Community** release. Use the Windows x64 installer for normal installation, or the portable executable for a no-install option. Do not download executables from unverified mirror links. A SHA-256 checksum file accompanies published Windows assets.
+Open [Releases](https://github.com/zoisify/riff/releases) and select the latest **Riff+** release. Use the Windows x64 installer for normal installation, or the portable executable for a no-install option. Do not download executables from unverified mirror links. A SHA-256 checksum file accompanies published Windows assets.
 
 **Windows warning:** Community installers may be unsigned, so Microsoft SmartScreen may show an unrecognised app warning. Review the [source](https://github.com/zoisify/riff/tree/main), compare the supplied SHA-256 checksum and decide whether you trust the publisher before running it. Never disable system security globally.
 
@@ -20,7 +20,7 @@ See the tests under [test/](test/) and the commit history for implementation det
 
 ## Compatibility and safety
 
-- **Independent installation**: it has its own app ID, display name, Start Menu shortcut and default data/config directory (`%LOCALAPPDATA%\RiffCommunity` on Windows). It should not overwrite the official Riff installation or reuse its cookies or saved music.
+- **Independent installation**: it has its own app ID, display name, Start Menu shortcut and default data/config directory (`%LOCALAPPDATA%\RiffPlus` on Windows). It should not overwrite the official Riff installation or reuse its cookies or saved music.
 - **Original author credited:** see [LICENSE](LICENSE). The design, most assets and much of the source code remain upstream work.
 - **Not guaranteed:** YouTube can change extraction behaviour; age-restricted media and other platforms were not exhaustively verified. No high-GPU-use fix is claimed.
 - **Release cadence:** updates are community-maintained; check the fork's releases page for newer builds.

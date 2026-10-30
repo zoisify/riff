@@ -5,16 +5,16 @@ const path = require('path');
 const IS_WIN = process.platform === 'win32';
 
 const DEFAULT_DATA_DIR = IS_WIN
-  ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'RiffCommunity')
+  ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'RiffPlus')
   : process.platform === 'darwin'
-  ? path.join(os.homedir(), 'Library', 'Application Support', 'RiffCommunity')
-  : path.join(os.homedir(), '.cache', 'riff-community');
+  ? path.join(os.homedir(), 'Library', 'Application Support', 'RiffPlus')
+  : path.join(os.homedir(), '.cache', 'riff-plus');
 
 const CONFIG_DIR = IS_WIN
-  ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'RiffCommunity')
+  ? path.join(process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'), 'RiffPlus')
   : process.platform === 'darwin'
-  ? path.join(os.homedir(), 'Library', 'Application Support', 'RiffCommunity')
-  : path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'riff-community');
+  ? path.join(os.homedir(), 'Library', 'Application Support', 'RiffPlus')
+  : path.join(process.env.XDG_CONFIG_HOME || path.join(os.homedir(), '.config'), 'riff-plus');
 const CONFIG_PATH = path.join(CONFIG_DIR, 'config.json');
 
 function readConfig() {

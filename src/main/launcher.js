@@ -4,20 +4,20 @@ const os = require('os');
 const path = require('path');
 const { execFile } = require('child_process');
 
-const NAME = 'Riff Community';
-const COMMENT = 'Riff Community - unofficial music player';
-const APP_ID = 'io.github.zoisify.riffcommunity';
+const NAME = 'Riff+';
+const COMMENT = 'Riff+ - unofficial music player';
+const APP_ID = 'io.github.zoisify.riffplus';
 
 function winShortcutPath() {
   return path.join(app.getPath('appData'), 'Microsoft', 'Windows', 'Start Menu', 'Programs', `${NAME}.lnk`);
 }
 
 function linuxDesktopPath() {
-  return path.join(os.homedir(), '.local', 'share', 'applications', 'riff-community.desktop');
+  return path.join(os.homedir(), '.local', 'share', 'applications', 'riff-plus.desktop');
 }
 
 function linuxIconPath() {
-  return path.join(os.homedir(), '.local', 'share', 'icons', 'hicolor', '512x512', 'apps', 'riff-community.png');
+  return path.join(os.homedir(), '.local', 'share', 'icons', 'hicolor', '512x512', 'apps', 'riff-plus.png');
 }
 
 function getLauncherInfo() {
