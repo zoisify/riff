@@ -20,6 +20,9 @@ const { fetchYouTubeLibrary } = require('./youtube-data');
 const RFACC_KEY = crypto.createHash('sha256').update('riff-account-key-v1').digest();
 const APP_ID = 'io.github.zoisify.riffplus';
 
+// Run migration before platform config and Chromium userData are initialised.
+try { require('../shared/first-run-migration').firstRunMigration(); } catch (error) { console.warn('[riff+] first-run import:', error.message); }
+
 app.setName('Riff+');
 if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
 

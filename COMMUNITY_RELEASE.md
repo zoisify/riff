@@ -18,6 +18,13 @@ Open [Releases](https://github.com/zoisify/riff/releases) and select the latest 
 
 See the tests under [test/](test/) and the commit history for implementation details. The fixes are based on upstream `main` as of 30 October 2026, not a copy of anybody's installed app or user profile.
 
+## Automatic first-run migration and downloads
+
+On first launch of Riff+ for Windows, the app can import supported content from an existing original Riff profile: metadata, library/playlists, local media, thumbnail/lyrics assets, plugins and saved application storage. It copies files only when the destination does not already exist and never deletes or overwrites original Riff files. If a file copy fails, the app can retry missing files on the next launch. Existing Riff+ preferences and playlists take priority.
+
+The app creates **Desktop/Music** and selects it as the download destination by default when Riff+ does not already have a download location set. Music downloads in this folder can be used by the independent Flacbox sync utility if configured. Users can change their download destination in Riff+ settings.
+
+**Not imported:** passwords, login cookies, browser sessions, app executables, system caches, and old yt-dlp binaries. Logins may need to be repeated. This import is not a system backup; users should retain original Riff data until satisfied with the migration. The installer deliberately does **not** silently uninstall original Riff; uninstalling another application requires a separate informed decision.
 ## Compatibility and safety
 
 - **Independent installation**: it has its own app ID, display name, Start Menu shortcut and default data/config directory (`%LOCALAPPDATA%\RiffPlus` on Windows). It should not overwrite the official Riff installation or reuse its cookies or saved music.
