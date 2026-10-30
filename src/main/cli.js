@@ -8,7 +8,7 @@ if (!args.includes('lyrics') && !args.includes('--lyrics')) {
   process.exit(0);
 }
 
-const PORT = 38472;
+const PORT = 38473;
 const URL = `http://127.0.0.1:${PORT}/api/lyrics-stream`;
 
 let cfonts = null;

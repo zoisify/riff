@@ -1,3 +1,7 @@
+> **UNOFFICIAL COMMUNITY FORK** — Riff Community is an independently maintained build of [Riff by rootscripts](https://github.com/rootscripts/riff). It is **not an official rootscripts release**. The original MIT licence and copyright remain intact. This fork focuses on YouTube search, remix matching and verified audio streaming.
+>
+> **[Download the Riff Community Windows release](https://github.com/zoisify/riff/releases)** · [Changes, safety and installation](COMMUNITY_RELEASE.md)
+
 <p align="center">
   <img src="banner.png?v=2" alt="Riff - desktop music player and audio suite for YouTube Music, SoundCloud, and local files" width="100%">
 </p>
@@ -20,7 +24,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/rootscripts/riff/releases">
+  <a href="https://github.com/zoisify/riff/releases">
     <img src="https://img.shields.io/badge/Download-6750A4?style=for-the-badge&logo=download&logoColor=white" height="40" alt="Download">
   </a>
   &nbsp;
@@ -115,7 +119,7 @@ Migrate existing music libraries between platforms in a single operation:
 
 ## Download and install
 
-Pre-built binaries are available on the [Releases page](https://github.com/rootscripts/riff/releases).
+Community Windows builds are available on the [fork releases page](https://github.com/zoisify/riff/releases). Official upstream releases remain available at https://github.com/rootscripts/riff/releases.
 
 Standard releases include all necessary dependencies (bundled yt-dlp and ffmpeg binaries). No secondary runtime configuration is required on Windows or Linux.
 

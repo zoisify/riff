@@ -50,7 +50,7 @@ function initUpdater(getWindow) {
 
   const checkViaGithubApi = async () => {
     try {
-      const res = await fetch('https://api.github.com/repos/rootscripts/riff/releases/latest', {
+      const res = await fetch('https://api.github.com/repos/zoisify/riff/releases/latest', {
         headers: { 'User-Agent': 'Riff-Player' }
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
@@ -108,7 +108,7 @@ function initUpdater(getWindow) {
         let htmlUrl = `${releasesUrl}/tag/v${info.version}`;
 
         try {
-          const res = await fetch('https://api.github.com/repos/rootscripts/riff/releases/latest', {
+          const res = await fetch('https://api.github.com/repos/zoisify/riff/releases/latest', {
             headers: { 'User-Agent': 'Riff-Player' }
           });
           if (res.ok) {

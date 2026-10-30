@@ -20,7 +20,7 @@ const { fetchYouTubeLibrary } = require('./youtube-data');
 const RFACC_KEY = crypto.createHash('sha256').update('riff-account-key-v1').digest();
 const APP_ID = 'io.github.rootscripts.riff';
 
-app.setName('Riff');
+app.setName('Riff Community');
 if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
 
 function encryptAccount(dataObj) {
@@ -377,7 +377,7 @@ function runGUI() {
       minWidth: 800,
       minHeight: 540,
                                    backgroundColor: firstRun ? '#8d5ef2' : '#000000',
-                                   title: 'Riff',
+                                   title: 'Riff Community',
                                    icon: path.join(__dirname, '../../assets', 'icon.png'),
                                    frame: false,
                                    titleBarStyle: 'hidden',
@@ -2137,7 +2137,7 @@ function runGUI() {
           let trayIcon = nativeImage.createFromPath(iconPath);
           trayIcon = trayIcon.resize({ width: 22, height: 22 });
           tray = new Tray(trayIcon);
-          tray.setToolTip('Riff');
+          tray.setToolTip('Riff Community');
           const contextMenu = Menu.buildFromTemplate([
             {
               label: 'Show/Hide',

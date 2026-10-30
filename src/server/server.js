@@ -16,7 +16,7 @@ const { StringDecoder } = require("string_decoder");
 const dns = require('dns');
 const net = require('net');
 
-const PORT = 38472;
+const PORT = 38473;
 const { DATA_DIR, CACHE_DIR, CUSTOM_LYRICS_DIR, LYRICS_DIR, THUMBNAILS_DIR, METADATA_PATH, LIBRARY_DIR, LIBRARY_PATH, ytDlpCommand, resolveDownloadDir, defaultDownloadDir, resolveBinary } = require('../shared/platform');
 const YT_COOKIES_FILE = path.join(DATA_DIR, 'yt-cookies.txt');
 const { hasYouTubeLoginCookies, youtubeAudioAttempts } = require('../shared/youtube-playback');

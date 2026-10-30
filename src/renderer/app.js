@@ -770,7 +770,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                           audioDurationStale: false,
                           currentAbortController: null,
                           presetToRenameId: null,
-                          serverPort: 38472,
+                          serverPort: 38473,
                           discordRpcEnabled: safeJson('devsize_discord_rpc', true),
                           lastBroadcastStateKey: null,
                           syncTimeout: null,
@@ -4097,7 +4097,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!meta.title || !meta.artist) return;
     const dur = typeof getReliableTrackDuration === 'function' ? getReliableTrackDuration() : (track.duration || 0);
     try {
-      const r = await fetch('http://127.0.0.1:' + (state.serverPort || 38472) + '/api/lastfm/now-playing', {
+      const r = await fetch('http://127.0.0.1:' + (state.serverPort || 38473) + '/api/lastfm/now-playing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -4124,7 +4124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!meta.title || !meta.artist) return;
     const dur = typeof getReliableTrackDuration === 'function' ? getReliableTrackDuration() : (track.duration || 0);
     try {
-      const r = await fetch('http://127.0.0.1:' + (state.serverPort || 38472) + '/api/lastfm/scrobble', {
+      const r = await fetch('http://127.0.0.1:' + (state.serverPort || 38473) + '/api/lastfm/scrobble', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -5495,7 +5495,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const missing = texts.filter(s => !dict.has(s));
     if (missing.length > 0) {
       try {
-        const port = state.serverPort || 38472;
+        const port = state.serverPort || 38473;
         const res = await fetch(`http://127.0.0.1:${port}/api/i18n-batch`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -7707,7 +7707,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   async function buildAutoplayCandidates() {
-    const port = state.serverPort || 38472;
+    const port = state.serverPort || 38473;
     const queue = (state.queue || []).filter(Boolean);
     const seenIds = new Set();
     const seenKeys = new Set();
@@ -10032,7 +10032,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
   async function resolveFullTrackStreamForShare(track) {
     if (!track) return '';
-    const port = state.serverPort || 38472;
+    const port = state.serverPort || 38473;
     try {
       const streamInfoUrl = `http://127.0.0.1:${port}/api/stream-info?url=${encodeURIComponent(track.url || '')}&id=${encodeURIComponent(track.id || '')}&platform=${encodeURIComponent(track.platform || state.platform || 'youtube')}&title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}&duration=${encodeURIComponent(track.duration || 0)}&forShare=1`;
       const ctrl = new AbortController();
@@ -16649,7 +16649,7 @@ function bindCoverHoldZoom(wrapEl) {
         proxyUrl: activeProxyUrl
       };
 
-      const port = state.serverPort || 38472;
+      const port = state.serverPort || 38473;
       fetch(`http://127.0.0.1:${port}/api/proxy-config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -16812,7 +16812,7 @@ function bindCoverHoldZoom(wrapEl) {
         btnProxyTest.disabled = true;
         showToast('Testing proxy connection...');
         try {
-          const port = state.serverPort || 38472;
+          const port = state.serverPort || 38473;
           const res = await fetch(`http://127.0.0.1:${port}/api/proxy-test`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -18308,7 +18308,7 @@ function bindCoverHoldZoom(wrapEl) {
     const originalBtnHtml = btn ? btn.innerHTML : 'Check for updates';
     let manualUpdateCheck = false;
     let checkTimeoutId = null;
-    let fallbackReleaseUrl = 'https://github.com/rootscripts/riff/releases/latest';
+    let fallbackReleaseUrl = 'https://github.com/zoisify/riff/releases/latest';
     let canNativeInstall = false;
 
     let latestUpdateInfo = null;
@@ -18430,13 +18430,13 @@ function bindCoverHoldZoom(wrapEl) {
           showToast('Could not check for updates', 'error');
           return;
         }
-        const res = await fetch('https://api.github.com/repos/rootscripts/riff/releases/latest', {
+        const res = await fetch('https://api.github.com/repos/zoisify/riff/releases/latest', {
           headers: { 'User-Agent': 'Riff-Player' }
         });
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const json = await res.json();
         const latestVersion = (json.tag_name || '').replace(/^v/i, '');
-        fallbackReleaseUrl = json.html_url || 'https://github.com/rootscripts/riff/releases/latest';
+        fallbackReleaseUrl = json.html_url || 'https://github.com/zoisify/riff/releases/latest';
         if (isNewerVersion(latestVersion, currentAppVersion)) {
           latestUpdateInfo = {
             version: latestVersion,
@@ -18499,7 +18499,7 @@ function bindCoverHoldZoom(wrapEl) {
 
         if (!hasImg || !hasPublishedAt) {
           try {
-            const res = await fetch('https://api.github.com/repos/rootscripts/riff/releases/latest', {
+            const res = await fetch('https://api.github.com/repos/zoisify/riff/releases/latest', {
               headers: { 'User-Agent': 'Riff-Player' }
             });
             if (res.ok) {
@@ -18942,7 +18942,7 @@ function bindCoverHoldZoom(wrapEl) {
         statusEl.classList.remove('hidden');
       }
       try {
-        const port = state.serverPort || 38472;
+        const port = state.serverPort || 38473;
         const res = await fetch(`http://127.0.0.1:${port}/api/lastfm/token`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -19035,7 +19035,7 @@ function bindCoverHoldZoom(wrapEl) {
       }
 
       try {
-        const port = state.serverPort || 38472;
+        const port = state.serverPort || 38473;
         const res = await fetch(`http://127.0.0.1:${port}/api/lastfm/mobile-session`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -19702,7 +19702,7 @@ function bindCoverHoldZoom(wrapEl) {
     const savedId = localStorage.getItem('riff_spotify_client_id') || '';
     if (spClientIdInput) spClientIdInput.value = savedId;
     if (btnSpLogin) btnSpLogin.disabled = !/^[a-f0-9]{32}$/i.test(savedId.trim());
-    if (spRedirectUri) spRedirectUri.textContent = `http://127.0.0.1:${state.serverPort || 38472}/api/spotify-callback`;
+    if (spRedirectUri) spRedirectUri.textContent = `http://127.0.0.1:${state.serverPort || 38473}/api/spotify-callback`;
     if (spotifyImportUrl) {
       spotifyImportUrl.value = '';
       spotifyImportUrl.disabled = false;
@@ -23089,7 +23089,7 @@ function bindCoverHoldZoom(wrapEl) {
     if (!force && remaining > 3) return false;
     state._waveReplenishBusy = true;
     try {
-      const port = state.serverPort || 38472;
+      const port = state.serverPort || 38473;
       const taste = typeof computeTasteProfile === 'function' ? await computeTasteProfile() : { seeds: [], topArtists: [] };
       const avoid = typeof getWaveAvoid === 'function' ? getWaveAvoid() : { ids: [], keys: [], artists: [] };
       const seenIds = new Set();
@@ -24199,7 +24199,7 @@ function bindCoverHoldZoom(wrapEl) {
     }
 
     try {
-      const port = state.serverPort || 38472;
+      const port = state.serverPort || 38473;
       const res = await fetch(`http://127.0.0.1:${port}/api/trending`);
       const data = await res.json();
       if (data && data.success && Array.isArray(data.tracks) && data.tracks.length > 0) {

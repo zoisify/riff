@@ -1,6 +1,6 @@
 {
   "name": "riff",
-  "version": "44.0.0",
+  "version": "44.0.0-community.1",
   "main": "src/main/main.js",
   "bin": {
     "riff": "src/main/cli.js"
@@ -16,7 +16,7 @@
   "keywords": [],
   "author": "rootscripts",
   "license": "MIT",
-  "description": "made for humans, Riff - audio player.",
+  "description": "Unofficial community build of Riff with enhanced YouTube searching and playback.",
   "devDependencies": {
     "electron": "^41.7.1",
     "electron-builder": "^26.15.3"
@@ -28,19 +28,19 @@
     "hls.js": "^1.7.1",
     "tone": "^15.1.22"
   },
-  "productName": "Riff",
-  "homepage": "https://github.com/rootscripts/riff",
+  "productName": "Riff Community",
+  "homepage": "https://github.com/zoisify/riff",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/rootscripts/riff.git"
+    "url": "git+https://github.com/zoisify/riff.git"
   },
   "bugs": {
-    "url": "https://github.com/rootscripts/riff/issues"
+    "url": "https://github.com/zoisify/riff/issues"
   },
   "build": {
-    "appId": "io.github.rootscripts.riff",
-    "productName": "Riff",
-    "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
+    "appId": "io.github.zoisify.riffcommunity",
+    "productName": "Riff Community",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -106,7 +106,7 @@
     "publish": [
       {
         "provider": "github",
-        "owner": "rootscripts",
+        "owner": "zoisify",
         "repo": "riff",
         "releaseType": "release"
       }
