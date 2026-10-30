@@ -1,4 +1,4 @@
-﻿# Riff+ — unofficial Windows build
+# Riff+ — unofficial Windows build
 
 **Based on [Riff](https://github.com/rootscripts/riff) 44.0.0** by rootscripts. The original project is licensed under MIT; see [LICENSE](LICENSE). This fork is **not affiliated with, endorsed by, or maintained by** the upstream author.
 

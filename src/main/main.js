@@ -18,7 +18,7 @@ const {
 } = require('./google-oauth');
 const { fetchYouTubeLibrary } = require('./youtube-data');
 const RFACC_KEY = crypto.createHash('sha256').update('riff-account-key-v1').digest();
-const APP_ID = 'io.github.rootscripts.riff';
+const APP_ID = 'io.github.zoisify.riffplus';
 
 app.setName('Riff+');
 if (process.platform === 'win32') app.setAppUserModelId(APP_ID);

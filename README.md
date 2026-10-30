@@ -1,6 +1,6 @@
-> **UNOFFICIAL COMMUNITY FORK** — Riff+ is an independently maintained build of [Riff by rootscripts](https://github.com/rootscripts/riff). It is **not an official rootscripts release**. The original MIT licence and copyright remain intact. This fork focuses on YouTube search, remix matching and verified audio streaming.
+> **UNOFFICIAL COMMUNITY FORK** â€” Riff+ is an independently maintained build of [Riff by rootscripts](https://github.com/rootscripts/riff). It is **not an official rootscripts release**. The original MIT licence and copyright remain intact. This fork focuses on YouTube search, remix matching and verified audio streaming.
 >
-> **[Download the Riff+ Windows release](https://github.com/zoisify/riff/releases)** · [Changes, safety and installation](COMMUNITY_RELEASE.md)
+> **[Download the Riff+ Windows release](https://github.com/zoisify/riff/releases)** Â· [Changes, safety and installation](COMMUNITY_RELEASE.md)
 
 <p align="center">
   <img src="banner.png?v=2" alt="Riff - desktop music player and audio suite for YouTube Music, SoundCloud, and local files" width="100%">
@@ -34,11 +34,11 @@
 </p>
 
 <p align="center">
-  <a href="#core-features">Features</a> &nbsp;·&nbsp;
-  <a href="#built-in-audio-suite">Audio Suite</a> &nbsp;·&nbsp;
-  <a href="#material-design-3-expressive-ui">Interface</a> &nbsp;·&nbsp;
-  <a href="#download-and-install">Install</a> &nbsp;·&nbsp;
-  <a href="#faq">FAQ</a> &nbsp;·&nbsp;
+  <a href="#core-features">Features</a> &nbsp;Â·&nbsp;
+  <a href="#built-in-audio-suite">Audio Suite</a> &nbsp;Â·&nbsp;
+  <a href="#material-design-3-expressive-ui">Interface</a> &nbsp;Â·&nbsp;
+  <a href="#download-and-install">Install</a> &nbsp;Â·&nbsp;
+  <a href="#faq">FAQ</a> &nbsp;Â·&nbsp;
   <a href="#build-from-source">Build</a>
 </p>
 

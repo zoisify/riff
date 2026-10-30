@@ -1,4 +1,4 @@
-﻿# Riff+ 44.0.0-plus.1 — Windows x64
+# Riff+ 44.0.0-plus.2 — Windows x64
 
 **Unofficial community build** of [Riff by rootscripts](https://github.com/rootscripts/riff). Not affiliated with or endorsed by the original author. The original [MIT licence](https://github.com/zoisify/riff/blob/main/LICENSE) is retained.
 
