@@ -3,7 +3,7 @@
 on:
   push:
     tags:
-      - 'community-v*'
+      - 'v*-community.*'
 
 permissions:
   contents: write
@@ -60,3 +60,4 @@ jobs:
             --title 'Riff Community 44.0.0-community.1 (Windows x64)' `
             --notes-file '.github/COMMUNITY_RELEASE_NOTES.md' `
             --verify-tag
+
