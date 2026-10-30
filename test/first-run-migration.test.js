@@ -55,6 +55,31 @@ test('new user with no original Riff automatically gets Desktop Music, and rerun
  assert.equal(firstRunMigration(x.args).skipped,'already-migrated');
  assert.equal(conf(cfg).downloadDir,'D:\\Music');
 });
+test('pre-existing Desktop Music folder and its songs remain untouched', (t)=>{
+ const x=sandbox(t);
+ const song=path.join(x.args.desktop,'Music','existing-track.mp3');
+ const folder=path.join(x.args.desktop,'Music','Albums');
+ put(song,'original bytes');
+ put(path.join(folder,'album.flac'),'original album');
+ put(path.join(x.original,'metadata.json'),'{}');
+ const first=firstRunMigration(x.args);
+ assert.deepEqual(first.errors,[]);
+ assert.equal(conf(path.join(x.plus,'config.json')).downloadDir,path.join(x.args.desktop,'Music'));
+ assert.equal(fs.readFileSync(song,'utf8'),'original bytes');
+ assert.equal(fs.readFileSync(path.join(folder,'album.flac'),'utf8'),'original album');
+ const second=firstRunMigration(x.args);
+ assert.equal(second.skipped,'already-migrated');
+ assert.equal(fs.readFileSync(song,'utf8'),'original bytes');
+});
+test('blocked Desktop Music path is reported without touching the existing file', (t)=>{
+ const x=sandbox(t);
+ const blocker=path.join(x.args.desktop,'Music');
+ put(blocker,'not a folder');
+ const result=firstRunMigration(x.args);
+ assert.ok(result.errors.some(err=>err.startsWith('download-folder:')));
+ assert.equal(fs.readFileSync(blocker,'utf8'),'not a folder');
+ assert.equal(fs.existsSync(path.join(x.plus,'.riff-plus-import-v1.json')),false);
+});
 test('symlink to outside source folder is ignored', (t)=>{
  const x=sandbox(t);put(path.join(x.original,'library','safe.mp3'),'ok');
  const external=path.join(x.args.home,'external-secret.txt');put(external,'secret');
