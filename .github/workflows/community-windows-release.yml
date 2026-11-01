@@ -26,19 +26,21 @@ jobs:
       - name: Build installer
         shell: pwsh
         run: |
+          $version = node -p "require('./package.json').version"
           npx --no-install electron-builder --win nsis --publish never
           if ($LASTEXITCODE -ne 0) { throw 'Windows installer build failed' }
           $installer = Get-ChildItem dist -File -Filter '*.exe' | Where-Object { $_.Name -notlike '*__uninstaller*' } | Select-Object -First 1
           if (-not $installer) { throw 'NSIS installer not found' }
-          Move-Item -LiteralPath $installer.FullName -Destination 'dist/Riff-Plus-44.0.0-plus.3-Windows-x64-Setup.exe'
+          Move-Item -LiteralPath $installer.FullName -Destination "dist/Riff-Plus-$version-Windows-x64-Setup.exe"
       - name: Build portable executable
         shell: pwsh
         run: |
+          $version = node -p "require('./package.json').version"
           npx --no-install electron-builder --win portable --publish never
           if ($LASTEXITCODE -ne 0) { throw 'Windows portable build failed' }
           $portable = Get-ChildItem dist -File -Filter '*.exe' | Where-Object { $_.Name -notlike '*-Setup.exe' -and $_.Name -notlike '*__uninstaller*' } | Select-Object -First 1
           if (-not $portable) { throw 'Portable executable not found' }
-          Move-Item -LiteralPath $portable.FullName -Destination 'dist/Riff-Plus-44.0.0-plus.3-Windows-x64-Portable.exe'
+          Move-Item -LiteralPath $portable.FullName -Destination "dist/Riff-Plus-$version-Windows-x64-Portable.exe"
       - name: SHA-256 checksums
         shell: pwsh
         run: |
@@ -52,12 +54,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          $version = node -p "require('./package.json').version"
           gh release create '${{ github.ref_name }}' `
-            'dist/Riff-Plus-44.0.0-plus.3-Windows-x64-Setup.exe' `
-            'dist/Riff-Plus-44.0.0-plus.3-Windows-x64-Portable.exe' `
+            "dist/Riff-Plus-$version-Windows-x64-Setup.exe" `
+            "dist/Riff-Plus-$version-Windows-x64-Portable.exe" `
             'dist/SHA256SUMS.txt' `
             --repo '${{ github.repository }}' `
-            --title 'Riff+ 44.0.0-plus.3 (Windows x64)' `
+            --title "Riff+ $version (Windows x64)" `
             --notes-file '.github/COMMUNITY_RELEASE_NOTES.md' `
             --verify-tag
 

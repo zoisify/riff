@@ -1,13 +1,19 @@
-# Riff+ 44.0.0-plus.3 — Windows x64
+# Riff+ 44.0.0-plus.4 — Windows x64
 
-**Unofficial community build** of [Riff by rootscripts](https://github.com/rootscripts/riff). Not affiliated with or endorsed by the original author. The original [MIT licence](https://github.com/zoisify/riff/blob/main/LICENSE) is retained.
+**Unofficial community fork** of [Riff by rootscripts](https://github.com/rootscripts/riff), distributed under the existing MIT licence. Not affiliated with or endorsed by the original author.
 
-**New in plus.3:** First launch imports available original Riff playlists, settings, library, cached tracks and local customisations into Riff+, without deleting original data or overwriting existing Riff+ files. New installs use a Desktop/Music download folder by default. Saved login sessions and cookies are intentionally not copied. Original Riff is not silently uninstalled.
+## Improvements since plus.3
 
-This build improves song-title searches, matching slowed/reverb/nightcore/hardstyle versions, YouTube audio-stream verification, and background prefetch reliability. See [COMMUNITY_RELEASE.md](https://github.com/zoisify/riff/blob/main/COMMUNITY_RELEASE.md) for details and limitations.
+- **Playlist sound presets:** choose a separate preset for every playlist entry (Nightcore, Speed up, Slowed + reverb, Distortion, or custom presets). Saved settings are applied automatically when the entry is played.
+- **Local-first playback:** when a song has a matching completed download, play the local audio instead of an online stream. A larger, high-contrast downloaded checkmark appears beside the track.
+- **Smarter Download All:** count and download only missing tracks; recheck the download folder before starting.
+- **Preset-aware playlist exports:** batch exports apply each saved playlist audio preset to the exported audio file; normal and preset-processed versions are stored separately to avoid overwriting originals and unintended double effects.
+- Retains YouTube playback/reliability improvements, search matching, and separate Riff+ branding from earlier releases.
 
-Choose **Setup.exe** for a separate installed application or **Portable.exe** to run without installation. Both use a separate name and data directory from official Riff. The files are built from the public repository using GitHub Actions.
+## First install
 
-Unsigned community builds may trigger Microsoft SmartScreen. Verify the **SHA256SUMS.txt** checksum before running downloaded files, and never disable your PC's security protections globally.
+Riff+ can import available data from an existing Riff installation without deleting the original data, replacing existing Riff+ files, or automatically uninstalling Riff. New installations default downloads to the Desktop/Music folder, and an existing Desktop/Music folder is preserved. This version does **not** install or configure Flacbox, iPhone sync or other personal automations. Login sessions and cookies are not imported.
 
-Windows x64 only for this first release. The built-in GPU usage report is not claimed to be fixed. Original app and user data are not included.
+Download **Setup.exe** to install or **Portable.exe** to run without an installer. Neither includes the developer's playlists, music, login credentials or personal settings. Both use a distinct Riff+ identity from upstream Riff.
+
+These unsigned community builds may trigger Windows SmartScreen. Inspect the published source and SHA256SUMS.txt checksums before installing. Do not disable system security protections globally.

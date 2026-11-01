@@ -3760,6 +3760,9 @@ async function buildDownloadsIndex() {
       if (!entry.isFile()) continue;
       const ext = path.extname(entry.name).toLowerCase();
       if (!AUDIO_EXTENSIONS.has(ext)) continue;
+      // Incomplete/empty output files must not be counted as downloads.
+      const stat = await fs.promises.stat(path.join(dir, entry.name)).catch(() => null);
+      if (!stat || !stat.isFile() || stat.size === 0) continue;
       const base = entry.name.slice(0, entry.name.length - ext.length).toLowerCase();
       if (base) map.set(base, entry.name);
     }
@@ -3769,23 +3772,14 @@ async function buildDownloadsIndex() {
   return map;
 }
 
-async function findDownloadedFile(title, artist) {
-  if (!title && !artist) return null;
+async function findDownloadedFile(title, artist, presetId = '') {
+  const { downloadKey } = require('../shared/download-match');
+  const key = downloadKey(title, artist, presetId);
+  if (!key) return null;
   if (!downloadsIndex || Date.now() - downloadsIndexBuiltAt > DOWNLOADS_INDEX_TTL) {
     await buildDownloadsIndex();
   }
-  const key = `${sanitizeFilename(artist || 'unknown artist')} - ${sanitizeFilename(title || 'untitled')}`.toLowerCase();
-  let found = downloadsIndex.get(key);
-  if (!found && (title || artist)) {
-    const sTitle = sanitizeFilename(title || '').toLowerCase();
-    for (const [k, v] of downloadsIndex.entries()) {
-      if (sTitle && (k.includes(sTitle) || sTitle.includes(k))) {
-        found = v;
-        break;
-      }
-    }
-  }
-  return found || null;
+  return downloadsIndex.get(key) || null;
 }
 
 async function cleanupDownloadArtifacts(dir, beforeSet, baseName, videoId, chosenExt, keepSuccessFile) {
@@ -4257,7 +4251,8 @@ async function handleEncode(req, res, parsedUrl) {
       coverTmp = await downloadCoverTemp(thumbUrl, tmpDir);
     } catch (_) {}
   }
-  const cleanTitle = sanitizeFilename(title);
+  const preset = String(parsedUrl.query.playlistPreset || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  const cleanTitle = sanitizeFilename(title + (preset && preset !== 'p_default' ? ` [Riff preset ${preset}]` : ''));
   const cleanArtist = sanitizeFilename(artist);
   const outFilename = `${cleanArtist} - ${cleanTitle}.${ext}`;
   const outPath = path.join(downloadsDir, outFilename);
@@ -5045,6 +5040,8 @@ function fetchNetEaseWords(title, artist, targetDuration) {
 const SERVER_TOKEN = crypto.randomBytes(24).toString('hex');
 
 const TOKEN_PROTECTED_ROUTES = new Set([
+  '/api/downloaded-index',
+  '/api/downloaded-match',
   '/api/state',
   '/api/translate',
   '/api/i18n-batch',
@@ -7995,6 +7992,18 @@ const server = http.createServer(async (req, res) => {
     const rawTimeout = parseInt(parsedUrl.query.timeout, 10);
     const timeoutSec = isNaN(rawTimeout) ? 20 : Math.max(5, Math.min(30, rawTimeout));
     return handleStreamInfo(req, res, trackUrl, trackId, platform, title, artist, duration, thumbnail, timeoutSec);
+  }
+
+  if (parsedUrl.pathname === '/api/downloaded-index') {
+    if (parsedUrl.query.refresh === '1' || !downloadsIndex || Date.now() - downloadsIndexBuiltAt > DOWNLOADS_INDEX_TTL) await buildDownloadsIndex();
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify({ keys: [...downloadsIndex.keys()] }));
+  }
+
+  if (parsedUrl.pathname === '/api/downloaded-match') {
+    const name = await findDownloadedFile(parsedUrl.query.title || '', parsedUrl.query.artist || '', parsedUrl.query.preset || '');
+    res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+    return res.end(JSON.stringify({ downloaded: !!name, streamUrl: name ? `http://127.0.0.1:${PORT}/api/downloaded-track?name=${encodeURIComponent(name)}` : null }));
   }
 
   if (parsedUrl.pathname === '/api/local-track') {

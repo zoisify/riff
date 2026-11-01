@@ -4233,6 +4233,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     applyTrackRenames(track);
     if (typeof queueList === "number") { startIndex = queueList; queueList = state.queue; }
     if (!track || !el.nativeAudio) return;
+    applyPlaylistEntryPreset(track);
     const selectedQuality = localStorage.getItem('riff_audio_quality') || 'medium';
     if (track._preloadedStreamQuality && track._preloadedStreamQuality !== selectedQuality) {
       delete track._preloadedStreamUrl;
@@ -4377,6 +4378,36 @@ document.addEventListener('DOMContentLoaded', async () => {
     loadSyncedLyrics(track.title, track.artist, currentToken);
 
     try {
+      // A real download takes priority over preloaded remote streams, including
+      // old playlist entries with stale SoundCloud/YouTube links.
+      if (track.platform !== 'local' && track.title && track.artist) {
+        try {
+          const matchUrl = `http://127.0.0.1:${state.serverPort}/api/downloaded-match?artist=${encodeURIComponent(track.artist)}&title=${encodeURIComponent(track.title)}&preset=${encodeURIComponent(track.playlistAudioPreset?.id || '')}`;
+          const matchRes = await fetch(matchUrl, { signal });
+          if (matchRes.ok) {
+            const match = await matchRes.json();
+            if (currentToken !== state.loadToken) return;
+            if (match.downloaded && match.streamUrl) {
+              delete track._preloadedStreamUrl;
+              // The exported audio already contains this playlist's effects.
+              // Do not apply the same preset twice in the live player.
+              if (track.playlistAudioPreset?.id && track.playlistAudioPreset.id !== 'p_default') {
+                const flat = getAllPresets().find(p => p.id === 'p_default');
+                if (flat) applyPreset(flat);
+              }
+              el.nativeAudio.src = match.streamUrl;
+              el.nativeAudio.preload = 'auto';
+              playSmooth();
+              applyAudioSettings();
+              return;
+            }
+          }
+        } catch (e) {
+          if (e.name === 'AbortError') return;
+          // An unavailable local index must not prevent normal online playback.
+        }
+      }
+
       if (track._preloadedStreamUrl && !(track._errorRetryStage > 0)) {
         if (currentToken !== state.loadToken) return;
         if (hlsInstance) {
@@ -8637,6 +8668,26 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
   }
 
+  // Playlist presets are snapshots attached to playlist entries, not global
+  // preferences or modifications of the underlying song/audio file.
+  let presetBeforePlaylistPlayback = null;
+  function applyPlaylistEntryPreset(track) {
+    const saved = track && track.playlistAudioPreset;
+    if (saved && saved.settings) {
+      if (!presetBeforePlaylistPlayback) {
+        const prior = getAllPresets().find(p => p.id === state.activePresetId);
+        presetBeforePlaylistPlayback = prior
+          ? JSON.parse(JSON.stringify(prior))
+          : { id: state.activePresetId || 'p_default', name: 'Previous sound', settings: JSON.parse(JSON.stringify(state.audioSettings)) };
+      }
+      applyPreset(saved);
+    } else if (presetBeforePlaylistPlayback) {
+      const prior = presetBeforePlaylistPlayback;
+      presetBeforePlaylistPlayback = null;
+      applyPreset(prior);
+    }
+  }
+
   function saveCustomPreset(name) {
     if (!name || !name.trim()) return;
     const newPreset = {
@@ -10692,6 +10743,54 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  let downloadedKeys = null;
+  let downloadedKeysFetchedAt = 0;
+  let downloadedKeysPromise = null;
+
+  function downloadedTrackKey(track) {
+    if (!track || !track.title || !track.artist) return '';
+    const clean = s => String(s).replace(/[<>:"/\\|?*]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const preset = track.playlistAudioPreset?.id;
+    const suffix = preset && preset !== 'p_default' ? ` [Riff preset ${String(preset).replace(/[^a-zA-Z0-9_-]/g, '')}]` : '';
+    return `${clean(track.artist)} - ${clean(track.title + suffix)}`;
+  }
+
+  async function loadDownloadedKeys(force = false) {
+    if (!force && downloadedKeys && Date.now() - downloadedKeysFetchedAt < 15000) return downloadedKeys;
+    if (downloadedKeysPromise) return downloadedKeysPromise;
+    downloadedKeysPromise = (async () => {
+      const response = await fetch(`http://127.0.0.1:${state.serverPort}/api/downloaded-index${force ? '?refresh=1' : ''}`);
+      if (!response.ok) throw new Error('Downloaded index unavailable');
+      const data = await response.json();
+      downloadedKeys = new Set(Array.isArray(data.keys) ? data.keys : []);
+      downloadedKeysFetchedAt = Date.now();
+      return downloadedKeys;
+    })().catch(err => {
+      if (force) throw err;
+      return downloadedKeys || new Set();
+    }).finally(() => { downloadedKeysPromise = null; });
+    return downloadedKeysPromise;
+  }
+
+  function markTrackDownloaded(row, track) {
+    const tick = row.querySelector('.riff-downloaded-tick');
+    if (!tick) return;
+    loadDownloadedKeys().then(keys => {
+      if (row.isConnected) tick.style.display = keys.has(downloadedTrackKey(track)) ? 'inline-flex' : 'none';
+    });
+  }
+
+  function refreshDownloadedTicks() {
+    downloadedKeysFetchedAt = 0;
+    downloadedKeys = null;
+    loadDownloadedKeys(true).then(keys => {
+      document.querySelectorAll('.track-row').forEach(row => {
+        const tick = row.querySelector('.riff-downloaded-tick');
+        if (tick && row._trackData) tick.style.display = keys.has(downloadedTrackKey(row._trackData)) ? 'inline-flex' : 'none';
+      });
+    });
+  }
+
   function createTrackRow(track, idx, currentCanonicalId, context, tracks, container) {
       if (track && track.artist) track.artist = stripYoutubeTopic(track.artist);
       applyTrackRenames(track);
@@ -10745,7 +10844,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         ${rowThumb ? `<img class="track-row-thumb" src="${escapeHtml(rowThumb)}" alt="" onerror="this.style.display='none'">` : ''}
       </div>` : ''}
       <div class="track-row-info">
-      <span class="track-row-title">${(context === 'favorites' || context === 'playlist') && isTrackPinned(track) ? '<svg class="track-pin-mark" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z"/></svg>' : ''}${escapeHtml(track.title || 'untitled')}</span>
+      <span class="track-row-title">${(context === 'favorites' || context === 'playlist') && isTrackPinned(track) ? '<svg class="track-pin-mark" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z"/></svg>' : ''}${escapeHtml(track.title || 'untitled')}<span class="riff-downloaded-tick" title="Downloaded — plays locally" aria-label="Downloaded" style="display:none"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12.5l5 5L20 6"/></svg></span></span>
       <div class="track-row-artist-wrap">${explicitTag}${showArtist ? `<span class="track-row-artist" title="view artist profile">${escapeHtml(track.artist || 'unknown artist')}</span>` : ''}</div>
       </div>
       <span class="track-row-duration">${formatDuration(track.duration)}</span>
@@ -10780,6 +10879,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         </div>
         `;
 
+        markTrackDownloaded(row, track);
         const artistEl = row.querySelector('.track-row-artist');
         if (artistEl) renderClickableArtists(artistEl, track.artist, track);
 
@@ -13003,6 +13103,15 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     trackToAddToPlaylist = track;
     if (!el.playlistPickList) return;
 
+    const presetSelect = document.getElementById('playlist-save-audio-preset');
+    if (presetSelect) {
+      presetSelect.replaceChildren(new Option('No assigned preset (normal playback)', ''));
+      for (const preset of getAllPresets()) {
+        presetSelect.add(new Option(preset.name, preset.id));
+      }
+      presetSelect.value = '';
+    }
+
     const trackPreviewEl = document.getElementById('add-playlist-track-preview');
     if (trackPreviewEl) {
       if (Array.isArray(track)) {
@@ -13123,11 +13232,20 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
         item.appendChild(actionEl);
 
         item.addEventListener('click', () => {
+          const chosenId = presetSelect ? presetSelect.value : '';
+          const chosenPreset = chosenId ? getAllPresets().find(p => p.id === chosenId) : null;
+          const makePlaylistEntry = (t) => {
+            const entry = stampAddedAt(t);
+            // A song can exist in several playlists with different presets.
+            delete entry.playlistAudioPreset;
+            if (chosenPreset) entry.playlistAudioPreset = JSON.parse(JSON.stringify(normalizePreset(chosenPreset)));
+            return entry;
+          };
           if (Array.isArray(track)) {
             let addedCount = 0;
             if (!Array.isArray(pl.tracks)) pl.tracks = [];
             track.forEach(t => {
-              pl.tracks.push(stampAddedAt(t));
+              pl.tracks.push(makePlaylistEntry(t));
               addedCount++;
             });
             localStorage.setItem('devsize_playlists', JSON.stringify(state.playlists));
@@ -13138,7 +13256,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
             showToast(`Added ${addedCount} tracks to "${pl.name}"`, 'success');
             clearTrackSelection();
           } else if (track) {
-            pl.tracks.push(stampAddedAt(track));
+            pl.tracks.push(makePlaylistEntry(track));
             localStorage.setItem('devsize_playlists', JSON.stringify(state.playlists));
             renderPlaylistsList();
             if (state.currentView === 'playlist-detail' && state.currentPlaylistId === pl.id) {
@@ -21730,6 +21848,10 @@ function bindCoverHoldZoom(wrapEl) {
     trackToDownload = track;
     downloadBatch = null;
     el.downloadModal.classList.remove('batch-mode');
+    const effectsToggle = document.getElementById('download-apply-effects');
+    if (effectsToggle) effectsToggle.disabled = false;
+    const effectsLabel = document.querySelector('label[for="download-apply-effects"]');
+    if (effectsLabel) effectsLabel.textContent = 'Apply current audio effects (Preset/High Quality)';
     const dlModeTabs = document.getElementById('dl-mode-tabs');
     if (dlModeTabs) dlModeTabs.style.display = '';
 
@@ -21796,7 +21918,7 @@ function bindCoverHoldZoom(wrapEl) {
     openModal(el.downloadModal);
   }
 
-  function openDownloadAllModal(playlist) {
+  async function openDownloadAllModal(playlist) {
     if (!el.downloadModal) return;
     const tracks = (playlist && Array.isArray(playlist.tracks) ? playlist.tracks : []).filter(t => t.platform !== 'local');
     if (!tracks.length) {
@@ -21804,8 +21926,26 @@ function bindCoverHoldZoom(wrapEl) {
       return;
     }
     trackToDownload = null;
-    downloadBatch = { name: playlist.name || 'Playlist', tracks };
+    // Query the actual download directory, not stale playback caches.
+    // A failed status check is not treated as proof that files are missing.
+    let downloaded;
+    try {
+      downloaded = await loadDownloadedKeys(true);
+    } catch (err) {
+      showToast('Unable to check downloaded tracks. Try again.', 'error');
+      return;
+    }
+    const missing = tracks.filter(t => !downloaded.has(downloadedTrackKey(t)));
+    if (!missing.length) {
+      showToast('All playlist tracks are already downloaded', 'success');
+      return;
+    }
+    downloadBatch = { name: playlist.name || 'Playlist', tracks: missing };
     el.downloadModal.classList.add('batch-mode');
+    const effectsToggle = document.getElementById('download-apply-effects');
+    if (effectsToggle) { effectsToggle.checked = true; effectsToggle.disabled = true; }
+    const effectsLabel = document.querySelector('label[for="download-apply-effects"]');
+    if (effectsLabel) effectsLabel.textContent = 'Apply each track’s saved playlist preset (required)';
     const dlModeTabs = document.getElementById('dl-mode-tabs');
     if (dlModeTabs) dlModeTabs.style.display = 'none';
     const dlPaneDownload = document.getElementById('dl-pane-download');
@@ -21815,7 +21955,7 @@ function bindCoverHoldZoom(wrapEl) {
     const modalTitle = document.getElementById('download-modal-title');
     if (modalTitle) modalTitle.textContent = 'Download playlist';
     if (el.downloadPreviewTitle) el.downloadPreviewTitle.textContent = playlist.name || 'Playlist';
-    if (el.downloadPreviewArtist) el.downloadPreviewArtist.textContent = `${tracks.length} track${tracks.length === 1 ? '' : 's'}`;
+    if (el.downloadPreviewArtist) el.downloadPreviewArtist.textContent = `${missing.length} not downloaded of ${tracks.length} track${tracks.length === 1 ? '' : 's'}`;
     if (el.downloadPreviewThumb) el.downloadPreviewThumb.style.display = 'none';
     if (el.downloadPreviewFallback) el.downloadPreviewFallback.style.display = 'none';
     updateDownloadBtnLabel();
@@ -22152,7 +22292,23 @@ function bindCoverHoldZoom(wrapEl) {
   if (el.btnConfirmDownload) {
     el.btnConfirmDownload.addEventListener('click', async () => {
       if (downloadBatch) {
-        const tracks = downloadBatch.tracks;
+        // Re-check immediately before transfer so files added after opening
+        // the modal are never downloaded again.
+        let downloaded;
+        try {
+          downloaded = await loadDownloadedKeys(true);
+        } catch (err) {
+          showToast('Unable to check downloaded tracks. Try again.', 'error');
+          return;
+        }
+        const tracks = downloadBatch.tracks.filter(t => !downloaded.has(downloadedTrackKey(t)));
+        if (!tracks.length) {
+          downloadBatch = null;
+          if (el.downloadModal) closeModal(el.downloadModal);
+          showToast('All playlist tracks are already downloaded', 'success');
+          refreshDownloadedTicks();
+          return;
+        }
         el.btnConfirmDownload.disabled = true;
         let done = 0;
         let failed = 0;
@@ -22163,16 +22319,39 @@ function bindCoverHoldZoom(wrapEl) {
           try {
             const customDir = state.downloadDir || localStorage.getItem('riff_download_dir') || '';
             const thumbUrl = getTrackThumbUrl(t) || t.thumbnail || t.cover || '';
-            const downloadUrl = `http://127.0.0.1:${state.serverPort}/api/download?url=${encodeURIComponent(t.url || '')}&id=${encodeURIComponent(t.id || '')}&title=${encodeURIComponent(t.title || '')}&artist=${encodeURIComponent(t.artist || '')}&format=${selectedFormat}&quality=${selectedQuality}&thumbnail=${encodeURIComponent(thumbUrl)}&customDir=${encodeURIComponent(customDir)}`;
-            const res = await fetch(downloadUrl);
-            const text = await res.text();
-            let data;
-            try {
-              data = JSON.parse(text);
-            } catch (e) {
-              throw new Error(text || 'server error');
+            // Prefer the unmodified existing source for the effect render. The
+            // preset-specific file is kept separately so normal files are safe.
+            let sourceUrl = '';
+            const localRes = await fetch(`http://127.0.0.1:${state.serverPort}/api/downloaded-match?title=${encodeURIComponent(t.title || '')}&artist=${encodeURIComponent(t.artist || '')}`);
+            if (localRes.ok) {
+              const localInfo = await localRes.json();
+              if (localInfo.downloaded) sourceUrl = localInfo.streamUrl;
             }
-            if (!data.success) throw new Error(data.error || 'Failed to download');
+            if (!sourceUrl) {
+              const infoUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(t.url || '')}&id=${encodeURIComponent(t.id || '')}&title=${encodeURIComponent(t.title || '')}&artist=${encodeURIComponent(t.artist || '')}&platform=${encodeURIComponent(t.platform || 'ytmusic')}&duration=${encodeURIComponent(t.duration || 0)}`;
+              const infoRes = await fetch(infoUrl);
+              const info = await infoRes.json();
+              if (!infoRes.ok || !info.success || !info.streamUrl) throw new Error(info.error || 'Audio source unavailable');
+              sourceUrl = info.isLocal ? info.streamUrl : (info.proxyUrl || info.streamUrl);
+            }
+            if (!/^http:\/\/127\.0\.0\.1:|^http:\/\/localhost:/i.test(sourceUrl)) {
+              sourceUrl = `http://127.0.0.1:${state.serverPort}/api/audio-proxy?url=${encodeURIComponent(sourceUrl)}`;
+            }
+            const audioRes = await fetch(sourceUrl);
+            if (!audioRes.ok) throw new Error(`Audio source failed (${audioRes.status})`);
+            const encodedAudio = await audioRes.arrayBuffer();
+            const ctx = audioEngine.ctx || new (window.AudioContext || window.webkitAudioContext)();
+            const originalAudio = await ctx.decodeAudioData(encodedAudio.slice(0));
+            const preset = t.playlistAudioPreset?.settings ? normalizePreset(t.playlistAudioPreset) : normalizePreset(defaultPresets[0]);
+            const settings = { ...preset.settings, volume: 1.0,
+              eq: { ...(preset.settings.eq || {}) }, eqBands: [...(preset.settings.eqBands || Array(10).fill(0))] };
+            const processedAudio = await audioEngine.renderOffline(originalAudio, settings);
+            const wavBlob = audioBufferToWav(processedAudio);
+            const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(t.title || 'untitled')}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&format=${selectedFormat}&quality=${selectedQuality}&thumbnail=${encodeURIComponent(thumbUrl)}&customDir=${encodeURIComponent(customDir)}&playlistPreset=${encodeURIComponent(t.playlistAudioPreset?.id || '')}`;
+            const encodeRes = await fetch(encodeUrl, { method: 'POST', headers: { 'Content-Type': 'audio/wav' }, body: wavBlob });
+            const data = await encodeRes.json();
+            if (!encodeRes.ok || !data.success) throw new Error(data.error || 'Failed to encode effects');
+            downloaded.add(downloadedTrackKey(t));
             done++;
             if (data.directory) lastDir = data.directory;
           } catch (err) {
@@ -22184,6 +22363,7 @@ function bindCoverHoldZoom(wrapEl) {
         downloadBatch = null;
         if (el.downloadModal) closeModal(el.downloadModal);
         showToast(failed > 0 ? `Downloaded ${done}/${tracks.length} (${failed} failed)` : `Downloaded ${tracks.length} tracks${lastDir ? ' to ' + lastDir : ''}`, failed > 0 ? 'error' : 'success');
+        refreshDownloadedTicks();
         return;
       }
       if (!trackToDownload) return;
@@ -22307,6 +22487,7 @@ function bindCoverHoldZoom(wrapEl) {
         if (!dataEncode.success) throw new Error(dataEncode.error || 'Failed to encode');
 
         showToast(`Download complete: saved to ${dataEncode.directory ? dataEncode.directory + '/' : ''}${dataEncode.filename}`, 'info');
+        refreshDownloadedTicks();
         if (el.downloadModal) closeModal(el.downloadModal);
       } catch (err) {
         if (err.name === 'AbortError') return;
